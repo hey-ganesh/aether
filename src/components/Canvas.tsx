@@ -52,11 +52,11 @@ export default function Canvas({ boardId }: { boardId: string }) {
   const [renderedPaths, setRenderedPaths] = useState<any[]>([]);
   const [wsStatus, setWsStatus] = useState<string>("disconnected");
   const [hasCopied, setHasCopied] = useState(false);
-  
+
   const [userName, setUserName] = useState<string | null>(null);
   const [showNameModal, setShowNameModal] = useState(false);
   const [nameInput, setNameInput] = useState("");
-  
+
   const [providerInstance, setProviderInstance] = useState<WebsocketProvider | null>(null);
   const [awarenessUsers, setAwarenessUsers] = useState<Map<number, any>>(new Map());
 
@@ -65,11 +65,11 @@ export default function Canvas({ boardId }: { boardId: string }) {
   const [currentPath, setCurrentPath] = useState<[number, number][] | null>(null);
 
   // Marquee State
-  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
-  const [selectionCurrent, setSelectionCurrent] = useState<{x: number, y: number} | null>(null);
+  const [selectionStart, setSelectionStart] = useState<{ x: number, y: number } | null>(null);
+  const [selectionCurrent, setSelectionCurrent] = useState<{ x: number, y: number } | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
-  
+
   // Toolbar state
   const [showAddMenu, setShowAddMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +81,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
   const [isSpaceDown, setIsSpaceDown] = useState(false);
 
   useEffect(() => {
-    const provider = new WebsocketProvider("ws://localhost:1234", boardId, doc);
+    const provider = new WebsocketProvider("wss://aether-production-5792.up.railway.app", boardId, doc);
     setProviderInstance(provider);
 
     const localName = localStorage.getItem("milanote_username");
@@ -160,7 +160,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
     const id = Math.random().toString(36).substring(2, 9);
     const worldX = (window.innerWidth / 2 - camera.x) / camera.zoom;
     const worldY = (window.innerHeight / 2 - camera.y) / camera.zoom;
-    
+
     nodesMap.set(id, { id, type, x: worldX - 150, y: worldY - 100 });
     setToolMode('select');
     setShowAddMenu(false);
@@ -191,14 +191,14 @@ export default function Canvas({ boardId }: { boardId: string }) {
       const pathsArray = doc.getArray<Y.Map<any>>("shared_paths");
       pathsArray.forEach(map => {
         if (map.get('id') === selectedPathId) {
-           map.set(key, value);
+          map.set(key, value);
         }
       });
     } else if (selectedNodeIds.size > 0) {
       const nodesMap = doc.getMap<NodeData>("nodes");
       selectedNodeIds.forEach(id => {
-         const current = nodesMap.get(id);
-         if (current) nodesMap.set(id, { ...current, [key]: value });
+        const current = nodesMap.get(id);
+        if (current) nodesMap.set(id, { ...current, [key]: value });
       });
     }
   };
@@ -216,7 +216,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
     } else if (toolMode === 'select' && e.button === 0 && !isSpaceDown) {
       if (e.target !== e.currentTarget) return;
       e.currentTarget.setPointerCapture(e.pointerId);
-      setSelectedNodeIds(new Set()); 
+      setSelectedNodeIds(new Set());
       setSelectedPathId(null);
       setSelectionStart({ x: worldX, y: worldY });
       setSelectionCurrent({ x: worldX, y: worldY });
@@ -270,7 +270,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
 
       const activeSet = new Set<string>();
       nodes.forEach(n => {
-        const nodeWidth = n.width || 300; 
+        const nodeWidth = n.width || 300;
         const nodeHeight = n.type === 'sticky' ? 240 : 150;
         if (n.x < right && n.x + nodeWidth > left && n.y < bottom && n.y + nodeHeight > top) {
           activeSet.add(n.id);
@@ -280,7 +280,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
       setSelectionStart(null);
       setSelectionCurrent(null);
     }
-    
+
     isDraggingCanvas.current = false;
     e.currentTarget.releasePointerCapture(e.pointerId);
   }, [isDrawing, currentPath, doc, providerInstance, selectionStart, selectionCurrent, nodes, toolMode]);
@@ -328,10 +328,10 @@ export default function Canvas({ boardId }: { boardId: string }) {
   const handleGroupDragDelta = useCallback((leaderId: string, dx: number, dy: number) => {
     if (!selectedNodeIds.has(leaderId)) return;
     const nodesMap = doc.getMap<NodeData>("nodes");
-    
+
     // Yjs naturally batches these sets into a single transaction broadcast
     selectedNodeIds.forEach(id => {
-      if (id === leaderId) return; 
+      if (id === leaderId) return;
       const current = nodesMap.get(id);
       if (current) nodesMap.set(id, { ...current, x: current.x + dx, y: current.y + dy });
     });
@@ -357,7 +357,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
   });
 
   return (
-    <div 
+    <div
       ref={canvasRef}
       className={`relative w-screen h-screen overflow-hidden ${getDynamicCursor()}`}
       onPointerMove={handlePointerMove}
@@ -373,20 +373,20 @@ export default function Canvas({ boardId }: { boardId: string }) {
     >
       <AnimatePresence>
         {showNameModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
             onPointerDown={(e) => e.stopPropagation()}
             onWheel={(e) => e.stopPropagation()}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
               className="bg-neutral-900 border border-neutral-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center"
             >
               <h2 className="text-2xl font-bold text-white mb-2">Welcome</h2>
               <p className="text-neutral-400 mb-8">What should we call you on this board?</p>
               <form onSubmit={submitName} className="flex flex-col gap-4">
-                <input 
+                <input
                   type="text" autoFocus
                   value={nameInput} onChange={(e) => setNameInput(e.target.value)}
                   placeholder="Your name..."
@@ -403,7 +403,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
 
       <AnimatePresence>
         {(selectedNodeIds.size > 0 || selectedPathId) && (
-          <motion.div 
+          <motion.div
             className="absolute top-20 right-4 bg-neutral-900 border border-neutral-800 p-4 rounded-xl shadow-xl z-50 pointer-events-auto w-64"
             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
             onPointerDown={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}
@@ -420,10 +420,10 @@ export default function Canvas({ boardId }: { boardId: string }) {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-neutral-400">Opacity</label>
-              <input 
-                 type="range" min="0" max="1" step="0.1" defaultValue="1"
-                 onChange={(e) => applyStyle('opacity', parseFloat(e.target.value))}
-                 className="w-full accent-indigo-500"
+              <input
+                type="range" min="0" max="1" step="0.1" defaultValue="1"
+                onChange={(e) => applyStyle('opacity', parseFloat(e.target.value))}
+                className="w-full accent-indigo-500"
               />
             </div>
           </motion.div>
@@ -443,8 +443,8 @@ export default function Canvas({ boardId }: { boardId: string }) {
           <span className="text-neutral-700 dark:text-neutral-300">{hasCopied ? "Copied!" : "Share"}</span>
         </button>
 
-        <CollaboratorsBar users={awarenessUsers} localClientId={providerInstance?.awareness.clientID} onJumpToUser={(x,y) => {}} />
-        
+        <CollaboratorsBar users={awarenessUsers} localClientId={providerInstance?.awareness.clientID} onJumpToUser={(x, y) => { }} />
+
         <div className="flex items-center gap-2 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-sm">
           <div className={`w-2 h-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-500' : wsStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'}`} />
         </div>
@@ -461,7 +461,7 @@ export default function Canvas({ boardId }: { boardId: string }) {
         <div className="relative flex flex-col items-center">
           <AnimatePresence>
             {showAddMenu && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 className="absolute bottom-16 mb-2 bg-neutral-900 border border-neutral-800 p-2 rounded-2xl shadow-2xl flex gap-2"
               >
@@ -491,9 +491,9 @@ export default function Canvas({ boardId }: { boardId: string }) {
       </div>
 
       <div className="absolute inset-0 z-10 w-full h-full origin-top-left" style={{ transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})` }}>
-        
+
         {selectionStart && selectionCurrent && (
-          <div 
+          <div
             className="absolute bg-indigo-500/10 border border-indigo-500 z-50 pointer-events-none"
             style={{
               left: Math.min(selectionStart.x, selectionCurrent.x),
@@ -533,9 +533,9 @@ export default function Canvas({ boardId }: { boardId: string }) {
         {nodes.map((node) => {
           if (!node || typeof node.x !== 'number') return null;
           return (
-            <NodeEditor 
-              key={node.id} 
-              node={node} 
+            <NodeEditor
+              key={node.id}
+              node={node}
               doc={doc}
               isSelected={selectedNodeIds.has(node.id)}
               updateNodePositionEnd={updateNodePositionEnd}
@@ -543,17 +543,17 @@ export default function Canvas({ boardId }: { boardId: string }) {
               updateNodeSize={updateNodeSize}
               zoom={camera.zoom}
               onClick={(e) => {
-                 if (toolMode === 'select') {
-                    e.stopPropagation();
-                    if (!e.shiftKey && !selectedNodeIds.has(node.id)) {
-                       setSelectedNodeIds(new Set([node.id]));
-                    } else if (e.shiftKey) {
-                       const next = new Set(selectedNodeIds);
-                       if (next.has(node.id)) next.delete(node.id); else next.add(node.id);
-                       setSelectedNodeIds(next);
-                    }
-                    setSelectedPathId(null);
-                 }
+                if (toolMode === 'select') {
+                  e.stopPropagation();
+                  if (!e.shiftKey && !selectedNodeIds.has(node.id)) {
+                    setSelectedNodeIds(new Set([node.id]));
+                  } else if (e.shiftKey) {
+                    const next = new Set(selectedNodeIds);
+                    if (next.has(node.id)) next.delete(node.id); else next.add(node.id);
+                    setSelectedNodeIds(next);
+                  }
+                  setSelectedPathId(null);
+                }
               }}
             />
           );
@@ -564,9 +564,9 @@ export default function Canvas({ boardId }: { boardId: string }) {
           if (!state.user || !state.cursor) return null;
 
           return (
-             <div key={clientId} className="absolute pointer-events-none z-50 transition-transform duration-100 ease-out" style={{ transform: `translate(${state.cursor.x}px, ${state.cursor.y}px)` }}>
-                <Cursor color={state.user.color} name={state.user.name} x={0} y={0} zoom={camera.zoom} onClick={() => {}} />
-             </div>
+            <div key={clientId} className="absolute pointer-events-none z-50 transition-transform duration-100 ease-out" style={{ transform: `translate(${state.cursor.x}px, ${state.cursor.y}px)` }}>
+              <Cursor color={state.user.color} name={state.user.name} x={0} y={0} zoom={camera.zoom} onClick={() => { }} />
+            </div>
           );
         })}
       </div>

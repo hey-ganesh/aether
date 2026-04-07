@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface CollaboratorsBarProps {
   users: Map<number, any>;
   localClientId?: number;
