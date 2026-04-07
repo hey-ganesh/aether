@@ -163,6 +163,8 @@ wss.on('connection', (conn, req) => {
   });
 });
 
-server.listen(1234, () => {
-  console.log('Running y-websocket server at localhost:1234');
+const PORT = process.env.PORT || 1234;
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Running y-websocket server on port ${PORT}`);
 });
