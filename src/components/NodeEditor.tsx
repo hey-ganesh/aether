@@ -37,8 +37,8 @@ const CustomImage = Image.extend({
   },
 });
 
-export default function NodeEditor({ 
-  node, doc, isSelected, handleGroupDragDelta, updateNodePositionEnd, updateNodeSize, zoom = 1, onClick 
+export default function NodeEditor({
+  node, doc, isSelected, handleGroupDragDelta, updateNodePositionEnd, updateNodeSize, zoom = 1, onClick
 }: NodeEditorProps) {
   const controls = useDragControls();
   const type = node?.type || 'text';
@@ -119,7 +119,7 @@ export default function NodeEditor({
     e.stopPropagation();
     const startX = e.clientX;
     const startW = node.width || 300;
-    
+
     const onMove = (moveEvent: PointerEvent) => {
       const deltaScreen = moveEvent.clientX - startX;
       // Calculate delta mapped to canvas world coordinates
@@ -127,12 +127,12 @@ export default function NodeEditor({
       const newW = Math.max(100, Math.min(startW + deltaWorld, 2000));
       updateNodeSize?.(node.id, newW);
     };
-    
+
     const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-    
+
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
   };
@@ -140,7 +140,7 @@ export default function NodeEditor({
 
   let designClasses = "bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800";
   let contentPadding = "p-4";
-  
+
   // Custom overriding from generic style-bar
   const dynamicStyle: React.CSSProperties = {
     zIndex: isSelected ? 50 : 10,
@@ -151,7 +151,7 @@ export default function NodeEditor({
   };
 
   if (node.color) {
-     dynamicStyle.backgroundColor = node.color;
+    dynamicStyle.backgroundColor = node.color;
   }
 
   if (type === 'sticky') {
@@ -159,8 +159,8 @@ export default function NodeEditor({
     if (!node.color) dynamicStyle.backgroundColor = '#fef3c7'; // default yellow
     contentPadding = "p-6";
   } else if (['rect', 'circle', 'diamond'].includes(type)) {
-    designClasses = "bg-transparent"; 
-    contentPadding = "p-4 pt-8"; 
+    designClasses = "bg-transparent";
+    contentPadding = "p-4 pt-8";
   }
 
   if (type === 'image') {
@@ -173,25 +173,25 @@ export default function NodeEditor({
         onPointerDown={(e) => onClick?.(e as any)}
         style={{ ...dynamicStyle, minHeight: 'auto', backgroundColor: 'transparent' }}
       >
-        <div 
+        <div
           className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing p-2"
           onPointerDown={(e) => { e.stopPropagation(); controls.start(e); }}
         >
-           <img 
-             src={node.src} 
-             alt="User inserted" 
-             className="w-full h-auto object-contain rounded shadow-lg pointer-events-none"
-             style={{ opacity: node.opacity !== undefined ? node.opacity : 1 }} 
-           />
+          <img
+            src={node.src}
+            alt="User inserted"
+            className="w-full h-auto object-contain rounded shadow-lg pointer-events-none"
+            style={{ opacity: node.opacity !== undefined ? node.opacity : 1 }}
+          />
         </div>
 
         <button onClick={deleteNode} className="absolute top-0 right-0 opacity-0 group-hover/image:opacity-100 bg-red-500 text-white rounded-full p-1 m-1 z-50 pointer-events-auto transition-opacity shadow-sm hover:scale-105 active:scale-95">
-           <X size={14} />
+          <X size={14} />
         </button>
 
-        <div 
-           className="absolute bottom-1 right-1 w-5 h-5 bg-black/50 backdrop-blur border border-white/20 rounded-tl-lg rounded-br opacity-0 group-hover/image:opacity-100 cursor-se-resize z-50 pointer-events-auto transition-opacity"
-           onPointerDown={startResize}
+        <div
+          className="absolute bottom-1 right-1 w-5 h-5 bg-black/50 backdrop-blur border border-white/20 rounded-tl-lg rounded-br opacity-0 group-hover/image:opacity-100 cursor-se-resize z-50 pointer-events-auto transition-opacity"
+          onPointerDown={startResize}
         />
       </motion.div>
     );
@@ -266,11 +266,11 @@ export default function NodeEditor({
         </div>
       )}
 
-      {/* Resize handle for shapes (if not text and not image, wait stickies don't resize dynamically normally, but we can enable it) */}
-      {type !== 'text' && type !== 'image' && (
-        <div 
-           className="absolute bottom-1 right-1 w-4 h-4 rounded-tl opacity-0 hover:opacity-100 cursor-se-resize z-50 pointer-events-auto"
-           onPointerDown={startResize}
+      {/* Resize handle for non-text nodes (image nodes are handled in the early return above) */}
+      {type !== 'text' && (
+        <div
+          className="absolute bottom-1 right-1 w-4 h-4 rounded-tl opacity-0 hover:opacity-100 cursor-se-resize z-50 pointer-events-auto"
+          onPointerDown={startResize}
         >
           {/* Subtle icon indicating resize capable */}
           <div className="w-full h-full bg-black/5 dark:bg-white/10 backdrop-blur rounded-br-xl" />
