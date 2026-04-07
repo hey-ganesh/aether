@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #fdfdfc;
+    --foreground: #1c1c1c;
+
+    /* Grid pattern colors */
+    --dot-color: #e5e5e5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #111111;
+      --foreground: #f3f4f6;
+      --dot-color: #2b2b2b;
+    }
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased overflow-hidden select-none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Dot Grid Pattern */
+  .canvas-grid {
+    background-size: 20px 20px;
+    background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+}
+
+@layer components {
+
+  /* Tiptap styles */
+  .ProseMirror {
+    @apply min-h-[100px] outline-none text-base leading-relaxed;
+  }
+
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: #a3a3a3;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .ProseMirror p {
+    @apply mb-2;
+  }
+
+  .ProseMirror p:last-child {
+    @apply mb-0;
+  }
+}
